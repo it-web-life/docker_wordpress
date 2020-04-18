@@ -1,0 +1,45 @@
+version: "3.1"
+
+services:
+  wordpress:
+    image: wordpress #WordPressのイメージ
+    container_name: wp1-wordpress #WordPressのコンテナ名
+    ports:
+      - "8000:80" #8000ポートでWordPressにアクセスできる
+    volumes:
+      - ./html:/var/www/html #docker_wordpress/html にデータがマウントされる
+    environment:
+      WORDPRESS_DB_NAME: wordpress_db #DBの名前
+      WORDPRESS_DB_PASSWORD: mysql_password #MySQLのパスワード
+    depends_on:
+      - mysql #コンテナをmysqlの後に立ち上げる
+    restart: always
+
+  mysql:
+    image: mariadb #MariaDBのイメージ
+    container_name: wp1-mariadb #MariaDBコンテナ名
+    ports:
+      - "3306:3306" #MacのMySQLとポートがバッティングする場合は変える 例) - "33060:3306"
+    volumes:
+      - db_mysql:/var/lib/mysql #docker volume にデータがマウントされる
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql_password #MySQLのパスワード
+    restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin #phpMyAdminのイメージ
+    container_name: wp1-phpmyadmin #phpMyAdminコンテナ名
+    ports:
+      - 8080:80 #8080ポートでphpMyAdminにアクセスできる
+    volumes:
+      - ./phpmyadmin/sessions:/sessions #docker_wordpress/phpmyadmin/sessions にデータがマウントされる
+    environment: #環境変数の指定
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=mysql_password
+    depends_on:
+      - mysql #コンテナをmysqlの後に立ち上げる
+
+volumes:
+  db_mysql:
